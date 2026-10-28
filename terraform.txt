@@ -1,0 +1,51 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 6.0"
+    }
+  }
+}
+
+provider "aws" {
+  region = "ap-south-1"
+}
+
+# Find an Ubuntu 24.04 AMI in the selected region
+data "aws_ami" "ubuntu" {
+  most_recent = true
+  owners      = ["099720109477"]
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-*"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
+
+# Create an EC2 instance
+resource "aws_instance" "web_server" {
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = "t3.micro"
+
+  tags = {
+    Name = "Terraform-EC2"
+  }
+}
+
+# Display the public IP address
+output "instance_public_ip" {
+  value = aws_instance.web_server.public_ip
+}
+
+before destroying - 
+aws ec2 describe-instances --filters "Name=tag:Name,Values=Terraform-EC2" --query "Reservations[].Instances[].[InstanceId,State.Name,PublicIpAddress]" --output table
