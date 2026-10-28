@@ -1,0 +1,132 @@
+Check the installations in PowerShell:
+java -version
+git --version
+docker --version
+
+Step 2: Start Jenkins
+If Jenkins is installed as a Windows service, start it from the Windows Services application.
+
+Open your browser and visit:
+
+Jenkins Local Server
+
+Unlock Jenkins using the initial administrator password shown in the Jenkins installation instructions. Complete the setup wizard and install the suggested plugins.
+
+Ensure the Pipeline and Git plugins are installed.
+Step 3: Create a GitHub Repository
+1. Open GitHub.
+2. Create a repository named jenkins-docker-demo.
+3. Add the following files and folders:
+jenkins-docker-demo/
+├── Jenkinsfile
+├── Dockerfile
+└── index.html
+
+File 1: index.html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Jenkins Docker Demo</title>
+</head>
+<body>
+    <h1>Web Application Deployed Successfully!</h1>
+    <p>Deployed using Jenkins Pipeline and Docker.</p>
+</body>
+</html>
+
+File 2: Dockerfile
+FROM nginx:alpine
+COPY index.html /usr/share/nginx/html/index.html
+EXPOSE 80
+
+This Dockerfile uses Nginx to serve the HTML web application.
+Step 4: Create the Jenkinsfile
+Create a file named Jenkinsfile in the root of the repository.
+
+Add the following code:
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo 'Building the web application...'
+                bat 'docker build -t jenkins-docker-demo .'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Checking Docker image...'
+                bat 'docker image inspect jenkins-docker-demo'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo 'Deploying the web application...'
+
+                bat '''
+                docker rm -f jenkins-web || exit /b 0
+                docker run -d --name jenkins-web -p 8081:80 jenkins-docker-demo
+                '''
+            }
+        }
+    }
+}
+
+
+
+Explanation of stages:
+- Checkout: Retrieves the source code from GitHub.
+- Build: Builds a Docker image from the Dockerfile.
+- Test: Checks whether the Docker image exists.
+- Deploy: Starts a Docker container to serve the web application on port 8081.
+Important: This example uses Windows batch commands (bat). The Jenkins agent must run on Windows and have Docker CLI access to Docker Desktop. If Jenkins runs on Linux, use sh commands instead.
+
+Commit and push all three files to GitHub.
+Step 5: Configure Jenkins to Use the Remote Jenkinsfile
+1. Open the Jenkins dashboard.
+2. Click New Item.
+3. Enter the name Docker-Web-Deployment.
+4. Select Pipeline, then click OK.
+5. Scroll to the Pipeline section.
+6. Set Definition to Pipeline script from SCM.
+7. Select SCM: Git.
+8. Enter your GitHub repository URL, for example:
+   https://github.com/YOUR-USERNAME/jenkins-docker-demo.git
+9. Set Branch Specifier to:
+   */main
+10. Set Script Path to:
+Jenkinsfile
+
+11. Click Save.
+If the repository is private, configure GitHub credentials in Jenkins and select them here. Never put passwords or access tokens directly in the Jenkinsfile.
+Step 6: Run the Pipeline
+1. Open the Docker-Web-Deployment job.
+2. Click Build Now.
+3. Click the build number.
+4. Open Console Output.
+5. Check that the Checkout, Build, Test, and Deploy stages complete successfully.
+If the build fails, check that:
+- Docker Desktop is running.
+- The Jenkins service account can access Docker.
+- The repository URL and branch are correct.
+- The Git and Pipeline plugins are installed.
+Step 7: Verify the Deployment
+Open your browser and visit:
+
+Deployed Web Application
+
+You should see:
+
+Web Application Deployed Successfully!
+
+You can also check the running container in PowerShell:
+docker ps
