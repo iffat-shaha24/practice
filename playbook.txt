@@ -1,0 +1,31 @@
+---
+- name: Configure Localhost
+  hosts: local
+  become: yes
+
+  tasks:
+    - name: Install Apache web server
+      apt:
+        name: apache2
+        state: present
+        update_cache: yes
+
+    - name: Create a webpage
+      copy:
+        dest: /var/www/html/index.html
+        content: |
+          <html>
+          <head>
+              <title>Ansible Practical</title>
+          </head>
+          <body>
+              <h1>Welcome to Ansible</h1>
+              <p>Software provisioning completed successfully.</p>
+          </body>
+          </html>
+
+    - name: Ensure Apache is running
+      service:
+        name: apache2
+        state: started
+        enabled: yes
