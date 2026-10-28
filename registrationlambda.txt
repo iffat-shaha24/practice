@@ -1,0 +1,77 @@
+import json
+import boto3
+import os
+from decimal import Decimal
+
+dynamodb = boto3.resource("dynamodb")
+table = dynamodb.Table("RegistrationTable")
+
+
+def lambda_handler(event, context):
+    try:
+        # Read data sent by the registration form
+        body = event.get("body", event)
+
+        # API Gateway normally sends the body as a JSON string
+        if isinstance(body, str):
+            body = json.loads(body)
+
+        # Get form fields
+        name = body.get("name")
+        email = body.get("email")
+        phone = body.get("phone")
+
+        # Validate required fields
+        if not name or not email or not phone:
+            return {
+                "statusCode": 400,
+                "headers": {
+                    "Content-Type": "application/json"
+                },
+                "body": json.dumps({
+                    "message": "Name, email and phone are required"
+                })
+            }
+
+        # Store registration in DynamoDB
+        table.put_item(
+            Item={
+                "email": email,
+                "name": name,
+                "phone": phone
+            },
+            ConditionExpression="attribute_not_exists(email)"
+        )
+
+        return {
+            "statusCode": 201,
+            "headers": {
+                "Content-Type": "application/json"
+            },
+            "body": json.dumps({
+                "message": "Registration successful"
+            })
+        }
+
+    except dynamodb.meta.client.exceptions.ConditionalCheckFailedException:
+        return {
+            "statusCode": 409,
+            "headers": {
+                "Content-Type": "application/json"
+            },
+            "body": json.dumps({
+                "message": "This email is already registered"
+            })
+        }
+
+    except Exception:
+        print("Registration failed")
+        return {
+            "statusCode": 500,
+            "headers": {
+                "Content-Type": "application/json"
+            },
+            "body": json.dumps({
+                "message": "Internal server error"
+            })
+        }
