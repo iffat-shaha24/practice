@@ -1,0 +1,110 @@
+2. Install Java and Jenkins on Windows
+Step 1: Install Java
+Jenkins requires Java to run.
+1. Download a supported Java LTS version from Eclipse Temurin.
+2. Install Java.
+3. Open Command Prompt and check:
+java -version
+
+If the Java version appears, continue.
+Step 2: Install Jenkins
+1. Open the official Jenkins download page.
+2. Download the Windows installer.
+3. Run the installer and follow the instructions.
+4. Start the Jenkins service if it isn't already running.
+5. Open your browser and visit:
+   http://localhost:8080
+6. Jenkins will ask for an administrator password. Follow the instructions on the screen to retrieve it. For a standard Windows installation, the initial password is usually stored in:
+   C:\ProgramData\Jenkins\.jenkins\secrets\initialAdminPassword
+7. Install the suggested plugins.
+8. Create your administrator account.
+Note: The installer and Java version must be compatible with your Jenkins release.
+3. Create a GitHub Repository
+Step 1: Create the repository
+1. Open GitHub.
+2. Click New repository.
+3. Enter the repository name:
+   jenkins-ci-practical
+4. Select Public for a simple practical.
+5. Click Create repository.
+Step 2: Create the Jenkinsfile
+Create a file named exactly Jenkinsfile, without a file extension.
+
+Copy this pipeline into it:
+pipeline {
+    agent any
+
+    triggers {
+        pollSCM('H/5 * * * *')
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Checking out source code from GitHub'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo 'Building the application'
+                bat 'echo Build Successful'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Testing the application'
+                bat 'echo Tests Passed'
+            }
+        }
+    }
+}
+
+Important: This example is for a Jenkins agent running on Windows because it uses the bat command.
+
+Click Commit changes to save Jenkinsfile to the repository's main branch.
+
+The schedule H/5 * * * * tells Jenkins to check the repository approximately every five minutes. The H spreads polling times across jobs instead of forcing every job to poll at exactly the same minute.
+4. Create a Pipeline Job in Jenkins
+Step 1: Create the job
+1. Open http://localhost:8080.
+2. Click New Item.
+3. Enter the job name:
+   GitHub-CI-Pipeline
+4. Select Pipeline.
+5. Click OK.
+Step 2: Configure the pipeline
+Scroll down to the Pipeline section.
+
+Set these options:
+Setting	Value
+Definition	Pipeline script from SCM
+SCM	Git
+Repository URL	Your GitHub repository URL
+Credentials	None, if the public repository requires no authentication
+Branch Specifier	*/main
+Script Path	Jenkinsfile
+
+
+Example repository URL:
+
+https://github.com/YOUR_USERNAME/jenkins-ci-practical.git
+
+Replace YOUR_USERNAME with your GitHub username.
+
+If Git is not available under SCM: Install the Git plugin through Manage Jenkins → Plugins, then restart Jenkins if prompted.
+Step 3: Save and run
+1. Click Save.
+2. Click Build Now on the left.
+3. Open the build number under Build History.
+4. Click Console Output.
+You should see messages similar to:
+Checking out source code from GitHub
+Building the application
+Build Successful
+Testing the application
+Tests Passed
+Finished: SUCCESS
+
+The job should show a successful build.
