@@ -1,0 +1,182 @@
+Step 1: Install Docker Desktop
+1. Open the official Docker Desktop download page.
+2. Download Docker Desktop for Windows.
+3. Run the installer.
+4. Select the WSL 2 backend if prompted.
+5. Complete the installation and restart your computer if required.
+6. Open Docker Desktop and wait until Docker has started.
+Verify the installation
+Open PowerShell and run:
+docker --version
+
+Then run:
+docker compose version
+
+Check whether Docker is running:
+docker info
+
+If these commands work, continue to the next step.
+
+If Docker is not installed: You may need to install or update WSL 2. Follow the official Microsoft WSL installation guide if prompted.
+Step 2: Create the Project Directory
+Open PowerShell and execute:
+mkdir ecommerce-docker
+cd ecommerce-docker
+
+Create a folder to store the webpages:
+mkdir html
+
+Your project structure will be:
+ecommerce-docker/
+│
+├── Dockerfile
+│
+└── html/
+    ├── index.html
+    └── products.html
+
+Step 3: Create the Home Page
+In PowerShell, run:
+notepad html/index.html
+
+If Notepad asks whether you want to create a new file, click Yes.
+
+Paste the following HTML code:
+<!DOCTYPE html>
+<html>
+<head>
+    <title>E-Commerce Store</title>
+</head>
+<body>
+    <h1>Welcome to E-Commerce Store</h1>
+
+    <p>Find the best products at affordable prices!</p>
+
+    <h2>Our Categories</h2>
+    <ul>
+        <li>Electronics</li>
+        <li>Fashion</li>
+        <li>Accessories</li>
+    </ul>
+
+    <a href="products.html">View Products</a>
+</body>
+</html>
+
+Save the file using Ctrl + S and close Notepad.
+Step 4: Create the Products Page
+Run:
+notepad html/products.html
+
+Paste the following code:
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Our Products</title>
+</head>
+<body>
+    <h1>Our Products</h1>
+
+    <h2>1. Laptop</h2>
+    <p>Price: Rs. 50,000</p>
+
+    <h2>2. Headphones</h2>
+    <p>Price: Rs. 2,000</p>
+
+    <h2>3. Smart Watch</h2>
+    <p>Price: Rs. 3,000</p>
+
+    <a href="index.html">Back to Home</a>
+</body>
+</html>
+
+Save the file using Ctrl + S and close Notepad.
+
+You now have two webpages connected through hyperlinks.
+Step 5: Create the Dockerfile
+A Dockerfile contains instructions for building the Docker image.
+
+In PowerShell, run:
+notepad Dockerfile
+
+Paste the following code:
+FROM nginx:alpine
+
+COPY html/ /usr/share/nginx/html/
+
+EXPOSE 80
+
+Save the file.
+Explanation
+Instruction	Purpose
+FROM nginx:alpine	Uses a lightweight Nginx image as the base.
+COPY html/ /usr/share/nginx/html/	Copies both HTML pages into the web server's directory.
+EXPOSE 80	Documents that the container's web server listens on port 80.
+
+
+Important: Save the file as Dockerfile, without a .txt extension. In PowerShell, you can check using:
+Get-ChildItem
+
+Step 6: Build the Docker Image
+Make sure PowerShell is inside the ecommerce-docker directory.
+
+Run:
+docker build -t ecommerce-app .
+
+Explanation
+- docker build builds a Docker image.
+- -t ecommerce-app gives the image the name ecommerce-app.
+- . specifies the current directory as the build context.
+Docker downloads the Nginx base image if necessary and copies your HTML pages into it.
+Verify the image
+Run:
+docker images
+
+You should see an image named:
+ecommerce-app
+
+Step 7: Run the Docker Container
+Execute:
+docker run -d -p 8080:80 --name ecommerce-container ecommerce-app
+
+Explanation
+Option	Purpose
+-d	Runs the container in the background.
+-p 8080:80	Maps Windows port 8080 to container port 80.
+--name ecommerce-container	Assigns a name to the container.
+ecommerce-app	Specifies the image to run.
+
+
+The application is now running inside a Docker container.
+
+Why use port 8080? It allows you to access the application through port 8080 on Windows while Nginx listens on port 80 inside the container.
+Step 8: Verify the Running Container
+Run:
+docker ps
+
+You should see ecommerce-container in the list of running containers.
+
+The port mapping should resemble:
+0.0.0.0:8080->80/tcp
+
+This indicates that traffic to port 8080 on your computer is forwarded to port 80 in the container.
+Step 9: Open the E-commerce Website
+Open Google Chrome or another browser.
+Home page
+Visit:
+
+http://localhost:8080
+
+You should see:
+
+Welcome to E-Commerce Store
+Products page
+Click View Products, or visit:
+
+http://localhost:8080/products.html
+
+You should see the laptop, headphones, and smart watch with their prices.
+
+Click Back to Home to return to the first webpage.
+
+Congratulations!
