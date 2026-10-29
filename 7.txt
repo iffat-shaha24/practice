@@ -1,0 +1,230 @@
+Step 1: Create an AWS Account and Open the Console
+1. Open the AWS Management Console.
+2. Sign in to your AWS account.
+3. Search for EC2 and check that you can access the EC2 dashboard.
+4. Choose the AWS Region in which you want to create your instance. For this practical, we will use Asia Pacific (Mumbai), ap-south-1.
+Important: Creating an EC2 instance can incur charges. Check your account's current pricing and Free Tier eligibility before provisioning resources.
+Step 2: Install Terraform
+1. Open the official Terraform installation guide.
+2. Select Windows and follow the installation instructions.
+3. If you download a ZIP archive, extract terraform.exe into a folder, for example:
+   C:\Terraform
+4. Add that folder to your Windows PATH environment variable if the installer has not already done so.
+5. Close and reopen PowerShell.
+Verify installation
+Run:
+terraform -version
+
+You should see the installed Terraform version.
+
+If PowerShell says that terraform is not recognized, check that the folder containing terraform.exe is included in your PATH.
+Step 3: Install AWS CLI
+Terraform needs AWS credentials to create resources in your AWS account.
+1. Open the official AWS CLI installation guide.
+2. Download and install AWS CLI for Windows.
+3. Close and reopen PowerShell.
+Verify the installation:
+aws --version
+
+Step 4: Configure AWS Credentials
+For a straightforward lab setup, configure AWS CLI with credentials for an IAM user that has permission to create and manage the required EC2 resources.
+
+Run:
+aws configure
+
+Enter the requested information:
+AWS Access Key ID: YOUR_ACCESS_KEY
+AWS Secret Access Key: YOUR_SECRET_KEY
+Default region name: ap-south-1
+Default output format: json
+
+Replace the example placeholders with your actual credentials.
+
+Security: Never share your AWS access keys or commit them to GitHub. For production environments, prefer temporary credentials or IAM roles.
+
+Verify that the credentials work:
+aws sts get-caller-identity
+
+If this returns your AWS account information, the CLI can authenticate successfully.
+Step 5: Create a Terraform Project
+Create a project directory:
+mkdir terraform-ec2
+cd terraform-ec2
+
+Create a file named main.tf:
+notepad main.tf
+
+If Notepad asks to create a new file, click Yes.
+
+Paste the following Terraform configuration.
+main.tf
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 6.0"
+    }
+  }
+}
+
+provider "aws" {
+  region = "ap-south-1"
+}
+
+# Find an Ubuntu 24.04 AMI in the selected region
+data "aws_ami" "ubuntu" {
+  most_recent = true
+  owners      = ["099720109477"]
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-*"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
+
+# Create an EC2 instance
+resource "aws_instance" "web_server" {
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = "t3.micro"
+
+  tags = {
+    Name = "Terraform-EC2"
+  }
+}
+
+# Display the public IP address
+output "instance_public_ip" {
+  value = aws_instance.web_server.public_ip
+}
+
+Save the file and close Notepad.
+Understanding the configuration
+Terraform element	Purpose
+terraform	Specifies Terraform provider requirements.
+required_providers	Specifies the AWS provider.
+provider "aws"	Configures AWS access for the selected region.
+data "aws_ami"	Finds a suitable Ubuntu machine image.
+resource "aws_instance"	Defines the EC2 instance to create.
+ami	Specifies the operating system image.
+instance_type	Specifies the virtual machine size.
+tags	Assigns a name to the EC2 instance.
+output	Displays the instance's public IP address after creation.
+
+
+Note: The example uses t3.micro, but its pricing and Free Tier eligibility depend on your account and AWS's current terms. This configuration creates a basic instance; it does not configure SSH access or install a web server.
+Step 6: Initialize Terraform
+In PowerShell, make sure you are inside the terraform-ec2 directory.
+
+Run:
+terraform init
+
+Purpose
+- Downloads the AWS provider.
+- Initializes the Terraform working directory.
+- Prepares Terraform to manage AWS resources.
+Expected output includes:
+Terraform has been successfully initialized!
+
+Step 7: Validate the Configuration
+Run:
+terraform validate
+
+Expected output:
+Success! The configuration is valid.
+
+This checks whether your Terraform configuration is syntactically valid.
+Step 8: Preview the Changes
+Run:
+terraform plan
+
+Terraform will inspect the configuration and show the resources it intends to create.
+
+Look for a summary similar to:
+Plan: 1 to add, 0 to change, 0 to destroy.
+
+This means Terraform plans to create one EC2 instance.
+
+If you see an error, check your AWS credentials, Region, Terraform configuration, and IAM permissions before proceeding.
+Step 9: Create the EC2 Instance
+Run:
+terraform apply
+
+Terraform displays the planned changes and asks for confirmation.
+
+Type:
+yes
+
+Press Enter.
+
+Terraform will communicate with AWS and create the EC2 instance. Wait until the operation completes.
+
+You should see output resembling:
+Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+instance_public_ip = "YOUR_PUBLIC_IP"
+
+The actual public IP address will be displayed in your terminal.
+
+Congratulations! Your EC2 instance has been provisioned using Terraform.
+Step 10: Verify the EC2 Instance in AWS
+1. Open the AWS Management Console.
+2. Search for EC2.
+3. Click Instances.
+4. Find the instance named Terraform-EC2.
+5. Check its status.
+You should see the instance in the list. Wait until its instance state is Running and its status checks have passed.
+
+You can also retrieve the public IP again using:
+terraform output instance_public_ip
+
+Verify using AWS CLI
+Run:
+aws ec2 describe-instances --filters "Name=tag:Name,Values=Terraform-EC2" --query "Reservations[].Instances[].[InstanceId,State.Name,PublicIpAddress]" --output table
+
+This displays the instance ID, state, and public IP address for instances matching the tag.
+Step 11: Clean Up Resources After the Practical
+Important: An EC2 instance can incur charges while it exists, even after you finish your practical.
+
+To delete the instance created by this Terraform configuration, run:
+terraform destroy
+
+Terraform displays the resources it plans to remove. Review the plan and type:
+yes
+
+Press Enter.
+
+After completion, Terraform should report that the resource has been destroyed.
+
+Use terraform destroy only when you are finished with the instance and are sure you want to delete the resources managed by this configuration.
+
+
+
+You will get the AWS Access Key ID and Secret Access Key from your AWS account. The region and output format are settings you enter yourself.
+Step 1: Open AWS Console
+Go to the official AWS Management Console and sign in to your account.
+Step 2: Get your Access Key ID and Secret Access Key
+1. Open the AWS Console.
+2. Search for IAM in the search bar.
+3. Open IAM (Identity and Access Management).
+4. Click Users on the left side.
+5. Select your IAM username.
+If you already have an IAM user:
+1. Open the Security credentials tab.
+2. Find the Access keys section.
+3. Click Create access key.
+4. Choose the use case suitable for your lab, such as Command Line Interface (CLI), if offered.
+5. Follow the instructions and create the key.
+6. Copy both values and store them securely.
+⚠️ Important: AWS displays the Secret Access Key only when you create it. Save it securely. Never share it with anyone or upload it to GitHub.
