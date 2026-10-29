@@ -1,0 +1,105 @@
+Step 1: Install Airflow
+Open Ubuntu terminal and run:
+sudo apt update
+sudo apt install python3-pip python3-venv -y
+
+Create and activate a virtual environment:
+mkdir airflow-practical
+cd airflow-practical
+python3 -m venv airflow-venv
+source airflow-venv/bin/activate
+
+Install Airflow using its official constraints file:
+AIRFLOW_VERSION=2.10.5
+PYTHON_VERSION=$(python --version | cut -d " " -f 2 | cut -d "." -f 1-2)
+
+pip install "apache-airflow==${AIRFLOW_VERSION}" \
+  --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-${AIRFLOW_VERSION}/constraints-${PYTHON_VERSION}.txt"
+
+Step 2: Initialize Airflow
+Set the Airflow home directory:
+export AIRFLOW_HOME=~/airflow
+
+Initialize the database:
+airflow db migrate
+
+Create a user for the web interface:
+airflow users create \
+  --username admin \
+  --firstname Admin \
+  --lastname User \
+  --role Admin \
+  --email admin@example.com \
+  --password admin123
+
+Step 3: Create the DAG File
+Create the DAGs directory and file:
+mkdir -p ~/airflow/dags
+nano ~/airflow/dags/datetime_dag.py
+
+Paste the following code:
+from airflow import DAG
+from airflow.operators.python import PythonOperator
+from datetime import datetime
+import pendulum
+
+def display_datetime():
+    current_time = pendulum.now("Asia/Kolkata")
+    print("Current Date:", current_time.date())
+    print("Current Time:", current_time.strftime("%H:%M:%S"))
+
+with DAG(
+    dag_id="datetime_dag",
+    start_date=pendulum.datetime(2026, 10, 28, tz="Asia/Kolkata"),
+    schedule="30 9 * * 3",
+    catchup=False,
+    tags=["practical"]
+) as dag:
+
+    show_datetime = PythonOperator(
+        task_id="display_date_time",
+        python_callable=display_datetime
+    )
+
+
+
+Save the file in Nano:
+- Press Ctrl + O, then Enter.
+- Press Ctrl + X.
+Explanation:
+- schedule="30 9 * * 3" schedules the DAG every Wednesday at 9:30 AM.
+- Asia/Kolkata sets the time zone to Indian Standard Time.
+- PythonOperator executes the Python function.
+- catchup=False prevents Airflow from creating runs for all missed past schedules.
+Step 4: Start Airflow
+Open the first Ubuntu terminal and run:
+export AIRFLOW_HOME=~/airflow
+source ~/airflow-practical/airflow-venv/bin/activate
+airflow scheduler
+
+Keep this terminal open.
+
+Open a second Ubuntu terminal and run:
+export AIRFLOW_HOME=~/airflow
+source ~/airflow-practical/airflow-venv/bin/activate
+airflow webserver --port 8080
+
+Keep this terminal open too.
+Step 5: Open the Airflow Web Interface
+Open your browser and visit:
+
+Airflow Local Web Interface
+
+Log in using:
+- Username: admin
+- Password: admin123
+Find datetime_dag in the DAG list and enable it.
+Step 6: Test the DAG
+1. Open datetime_dag.
+2. Click Trigger DAG to run it immediately.
+3. Open the DAG's Grid or Graph view.
+4. Select the task display_date_time.
+5. Open Logs to see the displayed date and time.
+The output will look similar to:
+Current Date: 2026-10-29
+Current Time: 10:15:30
