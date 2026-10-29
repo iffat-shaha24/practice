@@ -1,0 +1,75 @@
+Configure your identity:
+git config --global user.name "Your Name"
+git config --global user.email "your-email@example.com"
+
+
+Step 2: Perform the practical
+mkdir git-practical
+cd git-practical
+git init
+
+
+Create a file called index.html and add:
+<h1>Git Practical</h1>
+<p>Version control demonstration.</p>
+
+
+Run the commands one by one.
+Command	Purpose
+git init	Initializes a Git repository.
+git status	Shows file status.
+git add index.html	Stages a file.
+git add .	Stages all changes in the current directory.
+git commit -m "Initial commit"	Saves a snapshot in Git history.
+git log --oneline	Displays commit history.
+
+git status
+git add index.html
+git commit -m "Initial commit"
+git log --oneline
+
+
+Step 3: Demonstrate git diff
+Modify index.html by adding another paragraph:
+<p>Learning Git commands.</p>
+
+
+Before staging, run:
+git diff
+
+
+To see staged changes, use:
+git add index.html
+git diff --staged
+
+
+Step 4: Demonstrate branch and merge
+git branch feature
+git switch feature
+
+
+Add a new file about.html:
+<h1>About Us</h1>
+<p>This is the about page.</p>
+
+
+Commit it:
+git add about.html
+git commit -m "Add about page"
+
+
+Merge the branch into main:
+git switch main
+git merge feature
+git branch
+
+
+Step 5: Push and pull using GitHub
+Create an empty repository on GitHub named git-practical. Then connect your local repository:
+git remote add origin https://github.com/YOUR_USERNAME/git-practical.git
+git branch -M main
+git push -u origin main
+
+
+To pull changes from GitHub:
+git pull origin main
