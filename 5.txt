@@ -1,0 +1,173 @@
+Step 1: Open Ubuntu (WSL)
+Since you're using Windows:
+1. Press the Windows key.
+2. Search for Ubuntu.
+3. Open Ubuntu.
+4. Run the following command to check whether it is working:
+whoami
+
+If it displays your Linux username, continue.
+
+If Ubuntu is not installed, open PowerShell as Administrator and run:
+wsl --install -d Ubuntu
+
+Restart your computer if prompted, then open Ubuntu and complete the initial setup.
+Step 2: Install Ansible
+Run these commands in the Ubuntu terminal, one at a time:
+
+Update the package list:
+sudo apt update
+
+Install Ansible:
+sudo apt install ansible -y
+
+Verify the installation:
+ansible --version
+
+If the Ansible version appears, installation is successful.
+Step 3: Create a Working Directory
+Create a directory for your practical:
+mkdir ansible-practical
+
+Enter the directory:
+cd ansible-practical
+
+Step 4: Create an Inventory File
+The inventory file tells Ansible which machine to configure.
+
+Create a file named inventory:
+nano inventory
+
+Enter the following:
+[local]
+localhost ansible_connection=local
+
+Save and exit:
+1. Press Ctrl + O.
+2. Press Enter.
+3. Press Ctrl + X.
+Explanation:
+- [local] defines an inventory group.
+- localhost identifies the local machine.
+- ansible_connection=local tells Ansible to execute tasks locally without connecting through SSH.
+Step 5: Test the Ansible Connection
+Run:
+ansible local -i inventory -m ping
+
+Expected output will resemble:
+localhost | SUCCESS => {
+    "changed": false,
+    "ping": "pong"
+}
+
+Note: Ansible's ping module checks whether Ansible can execute tasks on the target. It is not the same as the network ping command.
+Step 6: Create an Ansible Playbook
+We will install Apache and create a simple webpage automatically.
+
+Create a file named playbook.yml:
+nano playbook.yml
+
+Enter this YAML code:
+---
+- name: Configure Localhost
+  hosts: local
+  become: yes
+
+  tasks:
+    - name: Install Apache web server
+      apt:
+        name: apache2
+        state: present
+        update_cache: yes
+
+    - name: Create a webpage
+      copy:
+        dest: /var/www/html/index.html
+        content: |
+          <html>
+          <head>
+              <title>Ansible Practical</title>
+          </head>
+          <body>
+              <h1>Welcome to Ansible</h1>
+              <p>Software provisioning completed successfully.</p>
+          </body>
+          </html>
+
+    - name: Ensure Apache is running
+      service:
+        name: apache2
+        state: started
+        enabled: yes
+
+Save and exit:
+- Press Ctrl + O.
+- Press Enter.
+- Press Ctrl + X.
+Explanation of the playbook
+Component	Purpose
+name	Specifies the play or task name.
+hosts: local	Runs tasks on the local inventory group.
+become: yes	Uses elevated privileges for administrative tasks.
+apt	Installs Apache on Ubuntu.
+state: present	Ensures Apache is installed.
+copy	Creates the HTML webpage.
+service	Manages the Apache service.
+enabled: yes	Configures Apache to start automatically at boot.
+
+
+Step 7: Execute the Playbook
+Run this command:
+ansible-playbook -i inventory playbook.yml --ask-become-pass
+
+Enter your Ubuntu password when prompted.
+
+Why use --ask-become-pass?
+
+The playbook uses become: yes, which requires administrative privileges. This option asks for your Ubuntu password when necessary.
+
+Wait for the execution to finish.
+
+Expected output will resemble:
+PLAY [Configure Localhost]
+
+TASK [Install Apache web server]
+changed: [localhost]
+
+TASK [Create a webpage]
+changed: [localhost]
+
+TASK [Ensure Apache is running]
+changed: [localhost]
+
+PLAY RECAP
+localhost : ok=3 changed=3 unreachable=0 failed=0
+
+The exact number of changed tasks may differ.
+
+If you see failed=0, the playbook has completed without task failures.
+Step 8: Verify Apache Installation
+Check the Apache service:
+sudo systemctl status apache2
+
+Look for:
+Active: active (running)
+
+Press q to exit the status screen.
+
+Next, test the webpage from Ubuntu:
+curl http://localhost
+
+You should see the HTML content containing:
+<h1>Welcome to Ansible</h1>
+
+View the webpage in your Windows browser
+Open Chrome and visit:
+
+http://localhost
+
+You should see:
+
+Welcome to Ansible
+
+If the browser does not display the webpage, check the Apache service and the output of the curl command.
