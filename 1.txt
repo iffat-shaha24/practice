@@ -1,0 +1,213 @@
+Step 1: Create a Scrum project in Jira
+1. Open Jira Software.
+2. Log in to your account.
+3. Select Projects → Create project.
+4. Select the Scrum template.
+5. Choose a suitable project type, such as Scrum.
+6. Enter the project name: Ecommerce-Project.
+7. Set the project key to ECOM, if Jira allows you to choose it.
+8. Click Create project.
+You should now have a Scrum board with a backlog and sprint-management options.
+Step 2: Create user stories in the Product Backlog
+In Scrum, requirements are maintained in the Product Backlog.
+1. Open your Ecommerce-Project.
+2. Select Backlog from the project sidebar.
+3. Click Create issue or Create.
+4. Select the issue type Story.
+5. Enter the following user stories one by one.
+Summary	User story
+View Products	As a user, I want to view products so that I can browse available items.
+Add to Cart	As a user, I want to add products to my cart so that I can purchase them.
+Checkout	As a user, I want to view the checkout page so that I can proceed with my order.
+
+
+Important: Jira automatically generates issue keys. For example, ECOM-1, ECOM-2, and ECOM-3. Your actual keys might differ.
+Step 3: Perform Sprint Planning
+Sprint Planning involves selecting backlog items to complete during a sprint.
+1. Open Backlog.
+2. Click Create sprint, if a sprint does not already exist.
+3. Drag the three stories into the new sprint.
+4. Click Start sprint.
+5. Enter the following details:
+Field	Example
+Sprint name	Sprint 1
+Duration	1 week
+Sprint goal	Develop the basic E-commerce application
+Sprint backlog	View Products, Add to Cart, Checkout
+
+
+6. Click Start to begin the sprint.
+Your Scrum sprint is now active.
+
+Note: If your Jira board does not offer sprint creation, check that you selected a Scrum project rather than a Kanban project and that your account has the necessary permissions.
+Step 4: Manage the Sprint Board
+Open the Active Sprint board.
+
+The board typically contains these columns:
+To Do	In Progress	Done
+View Products	Add to Cart	Checkout
+
+
+Initially, all three stories may appear under To Do.
+
+Demonstrate the workflow by dragging issues between columns:
+1. Move View Products from To Do to In Progress.
+2. Move it to Done after demonstrating completion.
+3. Repeat for the other stories.
+The exact workflow depends on your Jira board configuration.
+
+Exam point: Moving issues across the board demonstrates how Scrum progress is tracked throughout a sprint.
+Step 5: Create the GitHub Repository
+GitHub stores the application's source code.
+1. Open GitHub.
+2. Click New repository.
+3. Enter the repository name: ecommerce-project.
+4. Select Public or Private.
+5. Click Create repository.
+Open your terminal and clone the repository:
+git clone https://github.com/YOUR_USERNAME/ecommerce-project.git
+cd ecommerce-project
+
+Replace YOUR_USERNAME with your actual GitHub username.
+Create the application
+Create a file named index.html inside the repository.
+<!DOCTYPE html>
+<html>
+<head>
+    <title>E-Commerce Application</title>
+</head>
+<body>
+    <h1>Welcome to E-Commerce</h1>
+    <p>Browse our products online.</p>
+    <a href="products.html">View Products</a>
+</body>
+</html>
+
+Create a second file named products.html:
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Products</title>
+</head>
+<body>
+    <h1>Our Products</h1>
+    <ul>
+        <li>Laptop - ₹45000</li>
+        <li>Headphones - ₹1500</li>
+        <li>Smart Watch - ₹2500</li>
+    </ul>
+    <a href="index.html">Home</a>
+</body>
+</html>
+
+Push the code to GitHub
+Run:
+git add .
+git commit -m "ECOM-1 Add product homepage"
+git push origin main
+
+If the default branch is named master instead of main, use the correct branch name. Also, ensure the Jira issue key in the commit message matches your actual issue.
+
+Your application is now stored in GitHub.
+Step 6: Integrate Jira with GitHub
+The purpose of this step is to connect development activities with Jira issues.
+1. Open Jira.
+2. Go to Apps or Settings.
+3. Locate the GitHub integration available for your Jira installation.
+4. Install or configure the integration if required.
+5. Authorize access to your GitHub account and select the repository.
+6. Return to your GitHub repository.
+7. Make a commit referencing an existing Jira issue.
+For example:
+git add .
+git commit -m "ECOM-1 Add product homepage"
+git push origin main
+
+8. Open the corresponding Jira issue.
+9. Check its development information for the associated commit.
+Expected result: Jira can display linked development information when the integration is configured correctly and the commit references the appropriate issue key.
+
+Note: The available integration method and menu names depend on your Jira edition and account permissions. A commit message alone does not guarantee that Jira will show the commit unless the integration is configured.
+Step 7: Deploy the application on AWS EC2
+AWS EC2 provides a virtual server on which the E-commerce website can be hosted.
+A. Launch an EC2 instance
+1. Sign in to the AWS Management Console.
+2. Search for EC2.
+3. Click Launch instance.
+4. Enter the name Ecommerce-Web-Server.
+5. Select an Ubuntu Server AMI.
+6. Select an eligible instance type, such as an available micro instance.
+7. Create or select an SSH key pair.
+8. Configure the security group:
+   - SSH (port 22): allow access only from your IP.
+   - HTTP (port 80): allow access for the intended demonstration.
+9. Click Launch instance.
+Wait until the instance is running and its status checks pass.
+B. Connect to the EC2 instance
+For a Linux or WSL terminal, use the key file you downloaded.
+chmod 400 your-key.pem
+ssh -i your-key.pem ubuntu@YOUR_EC2_PUBLIC_IP
+
+Replace the key filename and public IP with your actual values.
+
+If you use Windows, you can also connect through the EC2 console's browser-based connection option when supported.
+C. Install Apache
+Run these commands inside the EC2 instance:
+sudo apt update
+sudo apt install apache2 -y
+sudo systemctl enable --now apache2
+
+Verify the service:
+sudo systemctl status apache2
+
+D. Deploy the E-commerce application
+The easiest exam method is to create the webpage directly on the server.
+sudo nano /var/www/html/index.html
+
+Enter:
+<!DOCTYPE html>
+<html>
+<head>
+    <title>E-Commerce Application</title>
+</head>
+<body>
+    <h1>Welcome to E-Commerce</h1>
+    <p>Application successfully deployed on AWS.</p>
+</body>
+</html>
+
+Save the file and exit.
+
+Create the products page:
+sudo nano /var/www/html/products.html
+
+Enter:
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Products</title>
+</head>
+<body>
+    <h1>Our Products</h1>
+    <ul>
+        <li>Laptop</li>
+        <li>Headphones</li>
+        <li>Smart Watch</li>
+    </ul>
+    <a href="index.html">Home</a>
+</body>
+</html>
+
+Save the file.
+E. Verify the deployment
+Open your browser and enter:
+
+Home page
+
+http://YOUR_EC2_PUBLIC_IP
+
+Products page
+
+http://YOUR_EC2_PUBLIC_IP/products.html
+
+Both pages should load successfully.
